@@ -5,6 +5,7 @@ import { useWeb3React } from "@web3-react/core";
 import { injected, walletconnect } from "./Connectore";
 import { WalletConnectConnector } from "@web3-react/walletconnect-connector";
 import createContract from "./contract";
+import { subscribe } from "graphql";
 function App() {
   const [errorMessage, setErrorMessage] = useState("");
   const {
@@ -23,20 +24,20 @@ function App() {
     async (connector) => {
       if (connector) {
         await activate(connector, async (res, err) => {
-          // console.log(err, res);
+          console.log(err, res);
         });
       }
     },
     [activate]
   );
+
   const submitHandler = async (e) => {
     e.preventDefault();
-    createContract(web3, "0x1F62AaBFa4aD4A5D782AF0cE0aBfF990ABf130E1")
-      .methods.safeMint(account)
+    createContract(web3, "0x2044f698Ae05b8A7C96aFF0891f184A21c574891")
+      .methods.trade(account, 12)
       .send({
         from: account,
         gas: "3000000",
-        value: web3.utils.toWei("0.01", "ether"),
       })
       .once("sending", function (payload) {
         console.log("sending --- ", payload);
@@ -105,9 +106,23 @@ function App() {
       // window.location.reload();
     }
   };
+
+  const subscribeEvent = async () => {
+    createContract(
+      web3,
+      "0x2044f698Ae05b8A7C96aFF0891f184A21c574891"
+    ).events.NewTrade((err, res) => {
+      if (!err) {
+        console.log("NewTrade", res);
+      }
+    });
+  };
+
+  const unSubscribeEvent = async () => {
+    web3.eth.clearSubscriptions();
+  };
   return (
     <div className="App">
-      {}
       <div className="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <img
@@ -162,16 +177,28 @@ function App() {
                 </button>
               </div>
               <div className="bg-white py-4 px-4 mt-6 shadow sm:rounded-lg sm:px-10">
-                <form className="space-y-6" onSubmit={submitHandler}>
-                  <div>
+                <div className="space-y-6">
+                  <div className="flex justify-between">
                     <button
-                      type="submit"
-                      className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      onClick={submitHandler}
+                      className=" flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
                       Mint Bored Mutant ape
                     </button>
+                    <button
+                      onClick={subscribeEvent}
+                      className=" flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Subscribe Event
+                    </button>
+                    <button
+                      onClick={unSubscribeEvent}
+                      className=" flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      UnSubscribe Event
+                    </button>
                   </div>
-                </form>
+                </div>
               </div>
             </div>
           ) : !account ? (
