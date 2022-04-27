@@ -33,7 +33,7 @@ function App() {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    createContract(web3, "0x2044f698Ae05b8A7C96aFF0891f184A21c574891")
+    createContract(web3, "0xD26B70EF87dA3dd95758E757F085c2D4418D83c2")
       .methods.trade(account, 12)
       .send({
         from: account,
@@ -108,10 +108,11 @@ function App() {
   };
 
   const subscribeEvent = async () => {
+    // To filter events by indexed params from address
     createContract(
       web3,
-      "0x2044f698Ae05b8A7C96aFF0891f184A21c574891"
-    ).events.NewTrade((err, res) => {
+      "0xD26B70EF87dA3dd95758E757F085c2D4418D83c2"
+    ).events.NewTrade({ filter: { from: [account] } }, (err, res) => {
       if (!err) {
         console.log("NewTrade", res);
       }

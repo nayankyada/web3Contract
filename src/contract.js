@@ -5,25 +5,25 @@ const createContract = (web3, address) => {
         anonymous: false,
         inputs: [
           {
-            indexed: true,
+            indexed: false,
             internalType: "uint256",
             name: "date",
             type: "uint256",
           },
           {
-            indexed: false,
+            indexed: true,
             internalType: "address",
             name: "from",
             type: "address",
           },
           {
-            indexed: true,
+            indexed: false,
             internalType: "address",
             name: "to",
             type: "address",
           },
           {
-            indexed: true,
+            indexed: false,
             internalType: "uint256",
             name: "amount",
             type: "uint256",
