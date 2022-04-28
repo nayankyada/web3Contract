@@ -5,7 +5,7 @@ import { useWeb3React } from "@web3-react/core";
 import { injected, walletconnect } from "./Connectore";
 import { WalletConnectConnector } from "@web3-react/walletconnect-connector";
 import createContract from "./contract";
-import { subscribe } from "graphql";
+import {toast} from "react-toastify"
 function App() {
   const [errorMessage, setErrorMessage] = useState("");
   const {
@@ -19,7 +19,7 @@ function App() {
     library: web3,
   } = useWeb3React();
   const [balance, setBalance] = useState("");
-
+  const [subsId, setSubsId] = useState(undefined);
   const login = useCallback(
     async (connector) => {
       if (connector) {
@@ -81,7 +81,14 @@ function App() {
       })
       .catch((e) => console.log(e));
   }, [account, chainId, active]);
-
+  useEffect(() => {
+    if(connector && !subsId){
+      subscribeEvent()
+    }
+  },[connector])
+  useEffect(() => {
+    console.log(subsId);
+  }, [subsId]);
   const connectWithRinkeby = async () => {
     if (connector instanceof WalletConnectConnector) {
       await web3.currentProvider.request({
@@ -109,19 +116,18 @@ function App() {
 
   const subscribeEvent = async () => {
     // To filter events by indexed params from address
-    createContract(
+    const subID = createContract(
       web3,
       "0xD26B70EF87dA3dd95758E757F085c2D4418D83c2"
     ).events.NewTrade({ filter: { from: [account] } }, (err, res) => {
       if (!err) {
-        console.log("NewTrade", res);
+        toast.success(res.returnValues.amount)
+        console.log("NewTrade",res.returnValues.amount);
       }
     });
+    setSubsId(subID);
   };
 
-  const unSubscribeEvent = async () => {
-    web3.eth.clearSubscriptions();
-  };
   return (
     <div className="App">
       <div className="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -179,25 +185,14 @@ function App() {
               </div>
               <div className="bg-white py-4 px-4 mt-6 shadow sm:rounded-lg sm:px-10">
                 <div className="space-y-6">
-                  <div className="flex justify-between">
+                  <div className="flex justify-center">
                     <button
                       onClick={submitHandler}
                       className=" flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
-                      Mint Bored Mutant ape
+                      Trade a transaction
                     </button>
-                    <button
-                      onClick={subscribeEvent}
-                      className=" flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                      Subscribe Event
-                    </button>
-                    <button
-                      onClick={unSubscribeEvent}
-                      className=" flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                      UnSubscribe Event
-                    </button>
+                 
                   </div>
                 </div>
               </div>
